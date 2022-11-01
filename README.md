@@ -19,8 +19,8 @@ Detects the blue light intensity from the ostracod courtship signaling and outpu
 ![Diagram](https://user-images.githubusercontent.com/59896939/199332750-f5f42a2f-9a82-4969-a6a4-3770f6d8e20b.jpg)
 
 ## Team Member Responsibility 
-Ebony (Leader) - Programming the SiPM sensor to detect BioLuminescent light under water. Designing waterproof case suitable for SiPM Senor.
-Reiley - Implementation of low-light, stereo camera system and synchronization.
-Roberto -  Designing DNA collector. Configuring the software interface of the pump system. Designing modular waterproof case for this system. 
-Ryan - Implementing user interface for utilizing the entire system as well as other general responsibilities, including the data storage system.
-Sammy - Implementation of low-light, stereo camera system and synchronization.
+- Ebony (Leader) - Programming the SiPM sensor to detect BioLuminescent light under water. Designing waterproof case suitable for SiPM Sensor.
+- Reiley - Implementation of low-light, stereo camera system and synchronization.
+- Roberto -  Designing DNA collector. Configuring the software interface of the pump system. Designing modular waterproof case for this system. 
+- Ryan - Implementing user interface for utilizing the entire system as well as other general responsibilities, including the data storage system.
+- Sammy - Implementation of low-light, stereo camera system and synchronization.

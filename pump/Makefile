@@ -4,7 +4,7 @@
 all: pump_system
 
 pump_system: pump_system.cpp
-	g++ -o pump_system pump_system.cpp -lJetsonGPIO -lpthread -Wl,-rpath=/usr/local/lib
+	g++ -o pump_system.out pump_system.cpp -lJetsonGPIO -lpthread -Wl,-rpath=/usr/local/lib
 
 clean:
-	rm -f pump_system *.o
+	rm -f pump_system.out *.o

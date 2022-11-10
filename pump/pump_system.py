@@ -21,7 +21,7 @@ class pump_system:
             GPIO.output(self.pump_pin, GPIO.LOW)
             GPIO.output(self.input_filter, GPIO.LOW)
             # print("PUMP OFF!")
-            self.water_sampled = self.pulse_count*mLPerPulse
+            self.water_sampled = self.pulse_count*self.mLPerPulse
 
     # Counts number of pulses
     def flowHandler(self, channel):
@@ -53,7 +53,7 @@ class pump_system:
         elif(input_u == 3):
             self.input_filter = self.filter_3_pin
         else:
-            self.input_filter = input_u %
+            self.input_filter = 0
 
     # Used for demo
     def getInputFilter(self):
@@ -76,11 +76,11 @@ class pump_system:
             self.getInputFilter(); # get input from user until it's valid
             print("Push button to start!")
             GPIO.wait_for_edge(self.but_pin, GPIO.RISING)
-            self.pumpToggle()
+            self.toggleCollection()
             print("Push button to end!")
             time.sleep(0.2)
             GPIO.wait_for_edge(self.but_pin, GPIO.RISING)
-            self.pumpToggle()
+            self.toggleCollection()
             print("Water Sampled: " + str(self.water_sampled) + " mL")
 
     
@@ -105,6 +105,7 @@ class pump_system:
 
 def main():
     p = pump_system()
+    p.demo()
     try:
         p.demo()
     finally:

@@ -1,9 +1,23 @@
-
 import RPi.GPIO as GPIO
 import time
 
 class pump_system:
     def __init__(self):
+        # VARIABLES (DO NOT CHANGE UNLESS NECESSARY)
+        self.input_filter = 0                    # Tracks which filter to activate
+        self.pulse_count = 0                     # Used to calculate how much water was collected
+        self.water_sampled = 0                   # Stores how much water was sampled in the last toggle
+        self.pump = False                        # Stores state of the pump
+        self.mLPerPulse = 0.223                  # Stores mL per pulse, can be changed here
+        
+        # PIN DEFINITIONS (Can be redefined here)
+        self.pump_pin = 12
+        self.but_pin = 18
+        self.flow_pin = 16
+        self.filter_1_pin = 11
+        self.filter_2_pin = 13
+        self.filter_3_pin = 15
+
         self.setUp()
 
     # INTERRUPT HANDLERS
@@ -55,6 +69,8 @@ class pump_system:
         else:
             self.input_filter = 0
 
+    # DEMO METHODS
+
     # Used for demo
     def getInputFilter(self):
         while(1):
@@ -83,33 +99,10 @@ class pump_system:
             self.toggleCollection()
             print("Water Sampled: " + str(self.water_sampled) + " mL")
 
-    
-    # VARIABLES
-
-    input_filter = 0                    # Tracks which filter to activate
-    pulse_count = 0                     # Used to calculate how much water was collected
-    water_sampled = 0                   # Stores how much water was sampled in the last toggle
-    pump = False                        # Stores state of the pump
-    mLPerPulse = 0.223                  # Stores mL per pulse, can be changed here
-
-    # PIN DEFINITIONS (Can be redefined here)
-
-    pump_pin = 12
-    but_pin = 18
-    flow_pin = 16
-    filter_1_pin = 11
-    filter_2_pin = 13
-    filter_3_pin = 15
-# END pump_system
-
-
-def main():
-    p = pump_system()
-    p.demo()
-    try:
-        p.demo()
-    finally:
+    def cleanup():
         GPIO.cleanup()
 
-if __name__ == '__main__':
-    main()
+
+
+
+

@@ -1,10 +1,10 @@
 from multiprocessing import Process, Queue
 import cv2, time
-
+import sys
   
 def capture_frames(src, video_file_name, syncQue, FPS, frameQue):
-    capture = cv2.VideoCapture(src)
-    cv2.VideoCapture()
+    capture = cv2.VideoCapture(src, cv2.CAP_GSTREAMER)
+    # cv2.VideoCapture()
     capture.set(cv2.CAP_PROP_BUFFERSIZE, 3)
     capture.set(cv2.CAP_PROP_FPS, 30)
 
@@ -89,8 +89,8 @@ if __name__ == '__main__':
         print(i)
         syncQue.put(i)
     
-    P1 = Process(target=capture_frames, args=(('rtsp://192.168.0.250:554/h264'),('cam1'),syncQue,30,frame1Que))
-    P2 = Process(target=capture_frames, args=(('rtsp://192.168.0.251:554/h264'),('cam2'),syncQue,30,frame2Que))
+    P1 = Process(target=capture_frames, args=(('videotestsrc ! videoconvert ! video/x-raw, format=BGR ! appsink'),('cam1'),syncQue,30,frame1Que))
+    P2 = Process(target=capture_frames, args=(('videotestsrc ! videoconvert ! video/x-raw, format=BGR ! appsink'),('cam2'),syncQue,30,frame2Que))
 
     P1.start()
     P2.start()

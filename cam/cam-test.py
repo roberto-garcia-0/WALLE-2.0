@@ -1,6 +1,9 @@
 from multiprocessing import Process, Queue
 import cv2, time
 import sys
+import RPi.GPIO as GPIO
+
+toggle_cam_pin = 30
   
 def capture_frames(src, video_file_name, syncQue, FPS, frameQue):
     capture = cv2.VideoCapture(src, cv2.CAP_GSTREAMER)
@@ -44,6 +47,9 @@ def capture_frames(src, video_file_name, syncQue, FPS, frameQue):
                 # Press Q on window to stop
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
+                # Press the external button to stop
+                if GPIO.input(toggle_cam_pin):
+                    break
             
             # get something out of the que to signify that process is ready for next frame
             syncQue.get()
@@ -74,6 +80,10 @@ def combine_and_save_frames(frame1Que,frame2Que):
             # Write the frame to the file
             output_video.write(frames)
 
+# Sets up all of the GPIO pins required for the cam system
+def GPIO_setup():
+    GPIO.setmode(GPIO.BOARD)
+    GPIO.setup(toggle_cam_pin, GPIO.IN)
 
 if __name__ == '__main__':
     
@@ -92,8 +102,11 @@ if __name__ == '__main__':
     P1 = Process(target=capture_frames, args=(('videotestsrc ! videoconvert ! video/x-raw, format=BGR ! appsink'),('cam1'),syncQue,30,frame1Que))
     P2 = Process(target=capture_frames, args=(('videotestsrc ! videoconvert ! video/x-raw, format=BGR ! appsink'),('cam2'),syncQue,30,frame2Que))
 
+    # wait for button press to start recording
+    GPIO.wait_for_edge(toggle_cam_pin, GPIO.RISING)
     P1.start()
     P2.start()
 
+    GPIO.cleanup()
     combine_and_save_frames(frame1Que,frame2Que)
 

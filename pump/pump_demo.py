@@ -2,10 +2,8 @@ from pump_system import pump_system
 
 def main():
     p = pump_system()
-    try:
-        p.demo()
-    finally:
-        p.cleanup()
+    p.demo()
+
 
 if __name__ == '__main__':
     main()

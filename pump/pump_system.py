@@ -17,7 +17,7 @@ class pump_system:
         self.filter_1_pin = 11
         self.filter_2_pin = 13
         self.filter_3_pin = 15
-
+        
         self.setUp()
 
     # INTERRUPT HANDLERS
@@ -33,6 +33,7 @@ class pump_system:
             GPIO.output(self.input_filter, GPIO.HIGH)
         else:
             GPIO.output(self.pump_pin, GPIO.LOW)
+            time.sleep(1)
             GPIO.output(self.input_filter, GPIO.LOW)
             # print("PUMP OFF!")
             self.water_sampled = self.pulse_count*self.mLPerPulse
@@ -74,7 +75,7 @@ class pump_system:
     # Used for demo
     def getInputFilter(self):
         while(1):
-            input_u = input("Enter filter number to activate! (1, 2, 3)")
+            input_u = input("Enter filter number to activate! (1, 2, 3)\n")
             if (input_u == 1):
                 self.input_filter = self.filter_1_pin
                 return
@@ -87,19 +88,23 @@ class pump_system:
 
     # Used for demo, requires button, no way out except ctrl+c
     def demo(self):
-        print("Starting demo now! Press CTRL+C to exit")
-        while (1):
-            self.getInputFilter(); # get input from user until it's valid
-            print("Push button to start!")
-            GPIO.wait_for_edge(self.but_pin, GPIO.RISING)
-            self.toggleCollection()
-            print("Push button to end!")
-            time.sleep(0.2)
-            GPIO.wait_for_edge(self.but_pin, GPIO.RISING)
-            self.toggleCollection()
-            print("Water Sampled: " + str(self.water_sampled) + " mL")
+        print("Starting demo now! Press CTRL+C to exit/stop")
+        try:
+            while (1):
+                self.getInputFilter() # get input from user until it's valid
+                self.toggleCollection()
+                print("Starting collection! Press CTRL+C to stop")
+                try:
+                    time.sleep(10)
+                except KeyboardInterrupt:
+                    pass
+                self.toggleCollection()
+                print("Water Sampled: " + str(self.water_sampled) + " mL")
+        except KeyboardInterrupt:
+            self.clean()
+            exit(0)
 
-    def cleanup():
+    def clean(err=None):
         GPIO.cleanup()
 
 

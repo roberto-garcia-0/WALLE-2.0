@@ -1,4 +1,5 @@
 # tentative file to put sipm driver code here
+# Adapted from https://github.com/waveshare/High-Pricision_AD_HAT/tree/master/python
 #!/usr/bin/python
 # -*- coding:utf-8 -*-
 

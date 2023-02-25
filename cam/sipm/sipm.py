@@ -13,11 +13,11 @@ REF = 5.08          # Modify according to actual voltage
 # ADC1 test part
 TEST_ADC1       = True
 # ADC2 test part
-TEST_ADC2       = False
+# TEST_ADC2       = False
 # ADC1 rate test part, For faster speeds use the C program
 TEST_ADC1_RATE   = False
 # RTD test part 
-TEST_RTD        = False     
+# TEST_RTD        = False     
 
 try:
     ADC = ADS1263.ADS1263()
@@ -43,17 +43,17 @@ try:
             for i in channelList:
                 print("\33[2A")
         
-    elif(TEST_ADC2):
-        if (ADC.ADS1263_init_ADC2('ADS1263_ADC2_400SPS') == -1):
-            exit()
-        while(1):
-            ADC_Value = ADC.ADS1263_GetAll_ADC2()   # get ADC2 value
-            for i in range(0, 10):
-                if(ADC_Value[i]>>23 ==1):
-                    print("ADC2 IN%d = -%lf"%(i, (REF*2 - ADC_Value[i] * REF / 0x800000)))
-                else:
-                    print("ADC2 IN%d = %lf"%(i, (ADC_Value[i] * REF / 0x7fffff)))     # 24bit
-            print("\33[11A")
+    #elif(TEST_ADC2):
+    #    if (ADC.ADS1263_init_ADC2('ADS1263_ADC2_400SPS') == -1):
+    #        exit()
+    #    while(1):
+    #        ADC_Value = ADC.ADS1263_GetAll_ADC2()   # get ADC2 value
+    #        for i in range(0, 10):
+    #            if(ADC_Value[i]>>23 ==1):
+    #                print("ADC2 IN%d = -%lf"%(i, (REF*2 - ADC_Value[i] * REF / 0x800000)))
+    #            else:
+    #                print("ADC2 IN%d = %lf"%(i, (ADC_Value[i] * REF / 0x7fffff)))     # 24bit
+    #        print("\33[11A")
 
     elif(TEST_ADC1_RATE):    # rate test
         time_start = time.time()

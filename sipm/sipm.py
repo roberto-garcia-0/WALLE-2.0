@@ -3,11 +3,13 @@
 #!/usr/bin/python
 # -*- coding:utf-8 -*-
 
-# import time
-import datetime
+import time
+# import datetime
 import ADS1263
 # import RPi.GPIO as GPIO
 
+ONEHOUR = (60*60)
+ONEMIN = 60
 REF = 5.00          # Modify according to actual voltage
                     # external AVDD and AVSS(Default), or internal 2.5V
                     #VDD max = 7V
@@ -41,28 +43,55 @@ ADC.ADS1263_SetMode(0) # 0 is singleChannel, 1 is diffChannel
 
 #main loop
 channelList = [0, 4]
-
+sample_num=0
 
 #funtion [channel List, time limit of file, ]
 try:
-    # start_time = datetime.UTC
-    print(datetime.UTC)
-    while(1):
-        ADC_Value = ADC.ADS1263_GetAll(channelList)    #get ADC1 value
+    while(1):#grand loop
+        start_time_sec = current_time = time.time()
+        # print(time.time())
 
-        for i in channelList:
 
-            if(ADC_Value[i]>>31 ==1):
-                data = (REF*2 - ADC_Value[i] * REF / 0x80000000)
-                # print("ADC1 IN%d = -%lf" %(i, (REF*2 - ADC_Value[i] * REF / 0x80000000)))  #over_flow
-            else:
-                data = (ADC_Value[i] * REF / 0x7fffffff)
-                # print("ADC1 IN%d = %lf" %(i, (ADC_Value[i] * REF / 0x7fffffff)))   # 32bit
-            
-            print(data)
 
-        # for i in channelList:
-        #     print("\33[2A") #clear the screen
+
+        # fn = open("/home/vidula/Desktop/project/ori_tri/inpt.data","r")
+
+        # for i, line in enumerate(fn):
+        
+        sample_num += 1
+        f = open("/home/ebony/Documents/WALLE-2.0/sipm/temp_samples/sample_%i.txt" %sample_num,'w')
+        
+    
+        while(current_time < (start_time_sec + ONEMIN)):#set file save interveals
+            line = [str(time.localtime(current_time).tm_min), str(time.localtime(current_time).tm_sec)]
+            ADC_Value = ADC.ADS1263_GetAll(channelList)    #get ADC1 value
+
+
+            for i in range(len(channelList)):
+
+                if(ADC_Value[i]>>31 == 1):
+                    data = (REF*2 - ADC_Value[i] * REF / 0x80000000)
+                    # print("ADC1 IN%d = -%lf" %(i, (REF*2 - ADC_Value[i] * REF / 0x80000000)))  #over_flow
+                else:
+                    data = (ADC_Value[i] * REF / 0x7fffffff)
+                    # print("ADC1 IN%d = %lf" %(i, (ADC_Value[i] * REF / 0x7fffffff)))   # 32bit
+
+                line.append(str(data))
+
+
+            line.append('\n')
+            f.writelines(' '.join(line))
+
+            current_time = time.time()
+                # print(data)
+
+        f.close()
+
+
+        # print(time.time())
+        print("one minute has passed")
+            # for i in channelList:
+            #     print("\33[2A") #clear the screen
 
 
 

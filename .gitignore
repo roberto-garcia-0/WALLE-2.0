@@ -1,3 +1,6 @@
+#test files
+/WALLE-2.0/sipm/temp_samples/*
+
 # Prerequisites
 *.d
 

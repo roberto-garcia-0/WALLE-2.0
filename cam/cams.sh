@@ -1,9 +1,10 @@
 #!/bin/bash
 
 # Launch the gstreamer pipeline in the background
-gst-launch-1.0 -e rtspsrc location=rtsp://192.168.0.250:554/h264 ! rtph264depay ! h264parse ! nvv4l2decoder ! nvvidconv ! video/x-raw, format=BGRx ! m.sink_0 \
-               rtspsrc location=rtsp://192.168.0.251:554/h264 ! rtph264depay ! h264parse ! nvv4l2decoder ! nvvidconv ! video/x-raw, format=BGRx ! m.sink_1 \
-               compositor name=m sink_0::ypos=0 sink_1::ypos=1080 ! nvvidconv ! nvv4l2h264enc ! h264parse ! mp4mux ! filesink location=./out1.mp4 sync=true & # \
+gst-launch-1.0 -e rtspsrc location=rtsp://192.168.0.250:554/h264 ! rtph264depay ! h264parse ! nvv4l2decoder ! nvvidconv ! video/x-raw, width=720, height=480, format=BGRx ! m.sink_0 \
+               rtspsrc location=rtsp://192.168.0.251:554/h264 ! rtph264depay ! h264parse ! nvv4l2decoder ! nvvidconv ! video/x-raw, width=720, height=480, format=BGRx ! m.sink_1 \
+               compositor name=m sink_0::xpos=0 sink_1::xpos=720 ! nvvidconv ! videoscale ! video/x-raw, width=1440, height=480 ! ximagesink & # \
+#                compositor name=m sink_0::ypos=0 sink_1::xpos=720 ! nvvidconv ! nvv4l2h264enc ! h264parse ! mp4mux ! filesink location=./out.mp4 sync=true & # \
 #                compositor name=t sink_1::xpos=0 ! nvvidconv ! nvv4l2h264enc ! h264parse ! mp4mux ! filesink location=./out2.mp4 sync=true &
 
 # Function to stop the pipelines via interrupt

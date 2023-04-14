@@ -55,7 +55,7 @@ class smalle():
         # Preview State 
         # Intializes a camera preview
         # Use switch to exit and proceed to recording state
-        preview_proc = subprocess.Popen(["./cams_preview.sh"])
+        preview_proc = subprocess.Popen(["./cam/cams_preview.sh"])
         GPIO.wait_for_edge(self.cam_preview_toggle, GPIO.RISING)
         GPIO.wait_for_edge(self.cam_preview_toggle, GPIO.RISING)
         preview_proc.send_signal(signal.SIGINT)
@@ -66,9 +66,9 @@ class smalle():
 
         # Recording State
         # Camera and SiPM recording is initialized
-        self.camera_proc = subprocess.Popen(["./cams_recording.sh"])
+        self.camera_proc = subprocess.Popen(["./cam/cams_recording.sh"])
         if self.use_sipm_sys:
-            sipm_proc = subprocess.Popen(["./command-to-sipm"]) ## TODO: create callable SiPM python script
+            sipm_proc = subprocess.Popen(["./command/to/sipm"]) ## TODO: create callable SiPM python script
         
         # Sleeps until it is time to collect DNA samples (3 in total)
         if self.use_pump_sys:

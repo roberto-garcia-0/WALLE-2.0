@@ -3,7 +3,7 @@ import signal
 import time
 import RPi.GPIO as GPIO
 
-from pump/pump_system import pump_system
+from pump.pump_system import pump_system
 
 # 1st Button Switch Crude Power On/Power Off
 # 2nd Button Toggle Camera Preview and Start Recording
@@ -15,14 +15,15 @@ class smalle():
     def __init__(self):
     
         # CONFIGURATION VARIABLES
-        self.video_duration = 12
-        self.pump_timestamps = [3,6,9]
+        self.deployment_duration = 12
+        self.pump_time_cooldowns = [3,3,3] # The time in between collections ie: for [3,3,3], pump will trigger at hours 3, 6, and 9 
         self.use_pump_sys = True
         self.use_sipm_sys = True
 
         # SYSTEM VARIABLES
         self.filters_sampled = 0
-
+        self.pump = pump_system()
+        self.graceful_shutoff_toggle_count = 0
 
         # PIN DEFINITION
         self.cam_preview_toggle = 32
@@ -35,34 +36,49 @@ class smalle():
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(self.cam_preview_toggle, GPIO.IN)
         GPIO.setup(self.graceful_shutoff_toggle, GPIO.IN)
-        GPIO.add_event_detect(self.graceful_shutoff_toggle, GPIO.RISING, callback=self.gracefulShutoff, bouncetime=0)
+        GPIO.add_event_detect(self.graceful_shutoff_toggle, GPIO.RISING, callback=self.gracefulShutoff, bouncetime=50)
 
+    # Trigger light beacon
     def lightbeacon(self):
         ## TODO
+        return "stub"
 
-    def gracefulShutoff(self):
-        ## TODO
-        exit(0)
+    # signals the camera process to end while preserving the video footage
+    def gracefulShutoff(self, channel):
+        self.graceful_shutoff_toggle_count += 1
+        if (self.graceful_shutoff_toggle_count > 1):
+            self.camera_proc.send_signal(signal.SIGINT)
+            exit(0)
 
     def run(self):
 
-        # Preview - Use switch to exit and proceed to next state
+        # Preview State 
+        # Intializes a camera preview
+        # Use switch to exit and proceed to recording state
         preview_proc = subprocess.Popen(["./cams_preview.sh"])
         GPIO.wait_for_edge(self.cam_preview_toggle, GPIO.RISING)
         GPIO.wait_for_edge(self.cam_preview_toggle, GPIO.RISING)
         preview_proc.send_signal(signal.SIGINT)
 
+        # Run commands to shutoff display and disable desktop environment to preserve battery and system resources
         subprocess.run(["xset", "-display", ":0.0", "dpms", "force", "off"])
-        ## TODO: Subprocess to disable desktop environment
+        subprocess.run(["sudo", "systemctl", "stop", "display-manager.service"])
 
-        camera_proc = subprocess.Popen(["./cams_recording.sh"])
-        sipm_proc = subprocess.Popen([]) ## TODO: create callable SiPM python script
+        # Recording State
+        # Camera and SiPM recording is initialized
+        self.camera_proc = subprocess.Popen(["./cams_recording.sh"])
+        if self.use_sipm_sys:
+            sipm_proc = subprocess.Popen(["./command-to-sipm"]) ## TODO: create callable SiPM python script
         
-        sleep(60*60*pump_timestamps[1])
-        ## TODO: Pump system calls and sleeps
-
-        camera_proc.wait()
-        if sipm_proc.poll() is None:
+        # Sleeps until it is time to collect DNA samples (3 in total)
+        if self.use_pump_sys:
+            for i in range(3):
+                sleep(60*60*self.pump_time_cooldowns[i])
+                self.pump.collectSample(i+1)
+        
+        # Waits until camera process ends (after a set time in the command)
+        self.camera_proc.wait()
+        if self.use_sipm_sys & sipm_proc.poll() is None:
             sipm_proc.terminate()
 
         self.lightbeacon()

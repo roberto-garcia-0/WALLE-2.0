@@ -55,7 +55,7 @@ class smalle():
         # Preview State 
         # Intializes a camera preview
         # Use switch to exit and proceed to recording state
-        # preview_proc = subprocess.Popen(["./cam/cams_preview.sh"])
+        preview_proc = subprocess.Popen(["./cam/cams_preview.sh"])
         GPIO.wait_for_edge(self.cam_preview_toggle, GPIO.FALLING)
         preview_proc.send_signal(signal.SIGINT)
         time.sleep(1)

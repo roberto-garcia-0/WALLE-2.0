@@ -4,7 +4,7 @@ import time
 class pump_system:
     def __init__(self):
         # VARIABLES (DO NOT CHANGE UNLESS NECESSARY)
-        self.input_filter = 0                    # Tracks which filter to activate
+        self.input_filter = 1                    # Tracks which filter to activate
         self.pulse_count = 0                     # Used to calculate how much water was collected
         self.water_sampled = 0                   # Stores how much water was sampled in the last toggle
         self.pump = False                        # Stores state of the pump
@@ -12,30 +12,29 @@ class pump_system:
         
         # PIN DEFINITIONS (Can be redefined here)
         self.pump_pin = 12
-        self.but_pin = 18
         self.flow_pin = 16
         self.filter_1_pin = 11
         self.filter_2_pin = 13
         self.filter_3_pin = 15
         
-        self.setUp()
+        self.setUp() # Call function to setup pins
 
     # INTERRUPT HANDLERS
 
-    # toggles pump and specific filter (valve solenoid)
+    # toggles pump and specific valve solenoid to select filter
     def toggleCollection(self, channel=None):
         
         self.pump = ~self.pump
         if (self.pump):
-            # print("PUMP ON!")
+            # PUMP ON
             self.pulse_count = 0
             GPIO.output(self.pump_pin, GPIO.HIGH)
             GPIO.output(self.input_filter, GPIO.HIGH)
         else:
+            # PUMP OFF
             GPIO.output(self.pump_pin, GPIO.LOW)
-            time.sleep(1)
+            time.sleep(2)
             GPIO.output(self.input_filter, GPIO.LOW)
-            # print("PUMP OFF!")
             self.water_sampled = self.pulse_count*self.mLPerPulse
 
     # Counts number of pulses
@@ -47,7 +46,6 @@ class pump_system:
     # Sets up all of the GPIO pins required for the pump system
     def setUp(self):
         GPIO.setmode(GPIO.BOARD)
-        GPIO.setup(self.but_pin, GPIO.IN)
         GPIO.setup(self.flow_pin, GPIO.IN)
         GPIO.setup(self.pump_pin, GPIO.OUT)
         GPIO.setup(self.filter_1_pin, GPIO.OUT)
@@ -55,11 +53,21 @@ class pump_system:
         GPIO.setup(self.filter_3_pin, GPIO.OUT)
         GPIO.add_event_detect(self.flow_pin, GPIO.RISING, callback=self.flowHandler, bouncetime=0)
 
-    # Checks if 2.2 L or more has been sampled.
-    def enoughCollected(self):
-        return self.water_sampled >= 2200
+# Triggers collection of 2L sample
+    def collectSample(self, filter):
+        print("Starting Collection of 2L!")
+        total_sampled = 0 # in mL
+        duration = 0      # in seconds
+        self.setInputFilter(filter)
+        while (total_sampled < 2100):
+            self.toggleCollection()
+            time.sleep(8)
+            self.toggleCollection()
+            total_sampled += self.water_sampled
+            print("Total Sampled: " + str(total_sampled) "mL")
+            duration += 1
 
-    # Used to properly select which filter (1,2,3), otherwise sets to zero
+    # Use to properly select filter, otherwise sets to one
     def setInputFilter(self, input_u):
         if (input_u == 1):
             self.input_filter = self.filter_1_pin
@@ -68,7 +76,13 @@ class pump_system:
         elif(input_u == 3):
             self.input_filter = self.filter_3_pin
         else:
-            self.input_filter = 0
+            self.input_filter = self.filter_1_pin
+
+    # Call to cleanup, mainly for testing
+    def clean(err=None):
+        GPIO.output(self.pump_pin, GPIO.LOW)
+        GPIO.output(self.input_filter, GPIO.LOW)
+        GPIO.cleanup()
 
     # DEMO METHODS
 
@@ -104,8 +118,8 @@ class pump_system:
             self.clean()
             exit(0)
 
-    def clean(err=None):
-        GPIO.cleanup()
+
+
 
 
 

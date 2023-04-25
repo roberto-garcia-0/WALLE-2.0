@@ -13,12 +13,12 @@ from pump.pump_system import pump_system
 
 class smalle():
     def __init__(self):
-    
+
         # CONFIGURATION VARIABLES
         self.deployment_duration = 12
         self.pump_time_cooldowns = [3,3,3] # The time in between collections ie: for [3,3,3], pump will trigger at hours 3, 6, and 9 
         self.use_pump_sys = True
-        self.use_sipm_sys = True
+        self.use_sipm_sys = False
 
         # SYSTEM VARIABLES
         self.filters_sampled = 0
@@ -55,14 +55,13 @@ class smalle():
         # Preview State 
         # Intializes a camera preview
         # Use switch to exit and proceed to recording state
-        preview_proc = subprocess.Popen(["./cam/cams_preview.sh"])
-        GPIO.wait_for_edge(self.cam_preview_toggle, GPIO.RISING)
-        GPIO.wait_for_edge(self.cam_preview_toggle, GPIO.RISING)
+        # preview_proc = subprocess.Popen(["./cam/cams_preview.sh"])
+        GPIO.wait_for_edge(self.cam_preview_toggle, GPIO.FALLING)
         preview_proc.send_signal(signal.SIGINT)
-
+        time.sleep(1)
+        
         # Run commands to shutoff display and disable desktop environment to preserve battery and system resources
-        subprocess.run(["xset", "-display", ":0.0", "dpms", "force", "off"])
-        subprocess.run(["sudo", "systemctl", "stop", "display-manager.service"])
+        # subprocess.run(["xset", "-display", ":0.0", "dpms", "force", "off"])
 
         # Recording State
         # Camera and SiPM recording is initialized
@@ -72,9 +71,10 @@ class smalle():
         
         # Sleeps until it is time to collect DNA samples (3 in total)
         if self.use_pump_sys:
-            for i in range(3):
-                sleep(60*60*self.pump_time_cooldowns[i])
-                self.pump.collectSample(i+1)
+            self.pump.collectSample(1)
+            # for i in range(3):
+            #     sleep(60*60*self.pump_time_cooldowns[i])
+            #     self.pump.collectSample(i+1)
         
         # Waits until camera process ends (after a set time in the command)
         self.camera_proc.wait()

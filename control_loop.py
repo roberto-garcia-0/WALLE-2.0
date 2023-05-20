@@ -1,22 +1,30 @@
 import subprocess
 import signal
-import os
 import time
 import RPi.GPIO as GPIO
+import threading
 
 from pump.pump_system import pump_system
 
+
+# Interrupts gstreamer processes after given hours. Runs in background.
+def delayed_interrupt_gstreamer(hours):
+    def delayed_execution():
+        time.sleep(hours * 3600)  # Convert hours to seconds
+        subprocess.Popen(["./cam/interrupt_gstreamer.sh"])
+
+    thread = threading.Thread(target=delayed_execution)
+    thread.start()
+
 # 1st Button Switch Crude Power On/Power Off
 # 2nd Button Toggle Camera Preview and Start Recording
-# This should require double rising edge detects
 # 3rd Graceful emergency shutoff
-# Should interrupt recording process while preserving current recording
 
 class smalle():
     def __init__(self):
 
         # CONFIGURATION VARIABLES
-        self.deployment_duration = 12
+        self.deployment_duration = 12 # in hours
         self.pump_time_cooldowns = [3,3,3] # The time in between collections ie: for [3,3,3], pump will trigger at hours 3, 6, and 9 
         self.use_pump_sys = False
         self.use_sipm_sys = False
@@ -27,7 +35,7 @@ class smalle():
         self.graceful_shutoff_toggle_count = 0
 
         # PIN DEFINITION
-        self.cam_preview_toggle = 32
+        self.preview_toggle = 32
         self.graceful_shutoff_toggle = 33
 
         self.setUp()
@@ -35,7 +43,7 @@ class smalle():
     # Sets up all of the GPIO pins required for the cam system
     def setUp(self):
         GPIO.setmode(GPIO.BOARD)
-        GPIO.setup(self.cam_preview_toggle, GPIO.IN)
+        GPIO.setup(self.preview_toggle, GPIO.IN)
         GPIO.setup(self.graceful_shutoff_toggle, GPIO.IN)
         GPIO.add_event_detect(self.graceful_shutoff_toggle, GPIO.RISING, callback=self.gracefulShutoff, bouncetime=50)
 
@@ -47,27 +55,37 @@ class smalle():
     # signals the camera process to end while preserving the video footage
     def gracefulShutoff(self, channel):
         self.graceful_shutoff_toggle_count += 1
-        if (self.graceful_shutoff_toggle_count > 1):
-            self.camera_proc.send_signal(signal.SIGINT)
+        if (self.graceful_shutoff_toggle_count > 3):
+            subprocess.run(["xset", "-display", ":0.0", "dpms", "force", "on"])
+            subprocess.Popen(["./cam/interrupt_gstreamer.sh"])
+            self.recording_process.wait()
+            self.lightbeacon()
             exit(0)
 
     def run(self):
 
-        # Preview State 
+    # Preview State
         # Intializes a camera preview
         # Use switch to exit and proceed to recording state
         preview_proc = subprocess.Popen(["./cam/cams_preview.sh"])
-        GPIO.wait_for_edge(self.cam_preview_toggle, GPIO.FALLING)
+
+        # Waits for the switch trigger to interrupt the preview process
+        GPIO.wait_for_edge(self.preview_toggle, GPIO.FALLING)
         print("Waiting")
-        subprocess.Popen(["./cam/kill_gstreamer.sh"])
-        time.sleep(5)
+        subprocess.Popen(["./cam/interrupt_gstreamer.sh"])
+        preview_proc.wait()
         print("Done!")
-        # Run commands to shutoff display and disable desktop environment to preserve battery and system resources
+
+        # Run commands to shutoff display
         # subprocess.run(["xset", "-display", ":0.0", "dpms", "force", "off"])
 
-        # Recording State
-        # Camera and SiPM recording is initialized
-        self.camera_proc = subprocess.Popen(["./cam/cams_recording.sh"])
+    # Recording State
+        # Camera recording is initialized
+        self.recording_process = subprocess.Popen(["./cam/cams_recording.sh"])
+
+        # Thread in background that waits for the set deployment duration, which after interrupts the recording process
+        delayed_interrupt_gstreamer(self.deployment_duration)
+
         if self.use_sipm_sys:
             sipm_proc = subprocess.Popen(["./command/to/sipm"]) ## TODO: create callable SiPM python script
         
@@ -75,16 +93,15 @@ class smalle():
         if self.use_pump_sys:
             self.pump.collectSample(1)
             # for i in range(3):
-            #     sleep(60*60*self.pump_time_cooldowns[i])
+            #     sleep(3600*self.pump_time_cooldowns[i])
             #     self.pump.collectSample(i+1)
         
-        # Waits until camera process ends (after a set time in the command)
-        self.camera_proc.wait()
-        if self.use_sipm_sys & sipm_proc.poll() is None:
+        # Waits until recording process ends. delayed_interrupt_gstreamer will interrupt the process.
+        self.recording_process.wait()
+        if self.use_sipm_sys:
             sipm_proc.terminate()
 
         self.lightbeacon()
-        GPIO.cleanup()
 
 
 # driver code

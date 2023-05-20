@@ -1,5 +1,6 @@
 import subprocess
 import signal
+import os
 import time
 import RPi.GPIO as GPIO
 
@@ -17,7 +18,7 @@ class smalle():
         # CONFIGURATION VARIABLES
         self.deployment_duration = 12
         self.pump_time_cooldowns = [3,3,3] # The time in between collections ie: for [3,3,3], pump will trigger at hours 3, 6, and 9 
-        self.use_pump_sys = True
+        self.use_pump_sys = False
         self.use_sipm_sys = False
 
         # SYSTEM VARIABLES
@@ -57,9 +58,10 @@ class smalle():
         # Use switch to exit and proceed to recording state
         preview_proc = subprocess.Popen(["./cam/cams_preview.sh"])
         GPIO.wait_for_edge(self.cam_preview_toggle, GPIO.FALLING)
-        preview_proc.send_signal(signal.SIGINT)
-        time.sleep(1)
-        
+        print("Waiting")
+        subprocess.Popen(["./cam/kill_gstreamer.sh"])
+        time.sleep(5)
+        print("Done!")
         # Run commands to shutoff display and disable desktop environment to preserve battery and system resources
         # subprocess.run(["xset", "-display", ":0.0", "dpms", "force", "off"])
 

@@ -71,7 +71,7 @@ ADS1263_DRATE = {
     'ADS1263_2d5SPS'    : 0x0,
 }
 # ADC2 data rate
-ADS1263_ADC2_DRATE = { #auxiliary 24-bit ADC
+ADS1263_ADC2_DRATE = {
     'ADS1263_ADC2_10SPS'    : 0,
     'ADS1263_ADC2_100SPS'   : 1,
     'ADS1263_ADC2_400SPS'   : 2,
@@ -239,7 +239,6 @@ class ADS1263:
         
     #The configuration parameters of ADC, gain and data rate
     def ADS1263_ConfigADC(self, gain, drate):
-        #PGA - progrmable gain amplifier, limits input voltgae range, best to by pass unless needed
         MODE2 = 0x80    # 0x80:PGA bypassed, 0x00:PGA enabled
         MODE2 |= (gain << 4) | drate
         self.ADS1263_WriteReg(ADS1263_REG['REG_MODE2'], MODE2)
@@ -262,8 +261,7 @@ class ADS1263:
         else:
             print("REG_MODE0 unsuccess")
 
-        #since our data rate is high Mode1 can be set to any sinc funtion(see ADS1263 data sheet for details), we might loose stability at a high read speed which we will fix later
-        MODE1 = 0x04    # Digital Filter; 0x84:FIR, 0x64:Sinc4, 0x44:Sinc3, 0x24:Sinc2, 0x04:Sinc1
+        MODE1 = 0x84    # Digital Filter; 0x84:FIR, 0x64:Sinc4, 0x44:Sinc3, 0x24:Sinc2, 0x04:Sinc1
         self.ADS1263_WriteReg(ADS1263_REG['REG_MODE1'], MODE1)
         if(self.ADS1263_ReadData(ADS1263_REG['REG_MODE1'])[0] == MODE1):
             print("REG_MODE1 success")
@@ -550,3 +548,4 @@ class ADS1263:
         config.module_exit()
         
 ### END OF FILE ###
+

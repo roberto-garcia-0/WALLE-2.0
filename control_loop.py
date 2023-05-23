@@ -14,6 +14,7 @@ def delayed_interrupt_gstreamer(hours):
         subprocess.Popen(["./cam/interrupt_gstreamer.sh"])
 
     thread = threading.Thread(target=delayed_execution)
+    thread.daemon = True
     thread.start()
 
 # 1st Button Switch Crude Power On/Power Off
@@ -24,7 +25,7 @@ class smalle():
     def __init__(self):
 
         # CONFIGURATION VARIABLES
-        self.deployment_duration = 12 # in hours
+        self.deployment_duration = 1 # in hours
         self.pump_time_cooldowns = [3,3,3] # The time in between collections ie: for [3,3,3], pump will trigger at hours 3, 6, and 9 
         self.use_pump_sys = False
         self.use_sipm_sys = False
@@ -36,7 +37,7 @@ class smalle():
 
         # PIN DEFINITION
         self.preview_toggle = 32
-        self.graceful_shutoff_toggle = 33
+        self.graceful_shutoff_toggle = 31
 
         self.setUp()
 
@@ -77,7 +78,7 @@ class smalle():
         print("Done!")
 
         # Run commands to shutoff display
-        # subprocess.run(["xset", "-display", ":0.0", "dpms", "force", "off"])
+        subprocess.run(["xset", "-display", ":0.0", "dpms", "force", "off"])
 
     # Recording State
         # Camera recording is initialized
@@ -100,7 +101,8 @@ class smalle():
         self.recording_process.wait()
         if self.use_sipm_sys:
             sipm_proc.terminate()
-
+	
+        subprocess.run(["xset", "-display", ":0.0", "dpms", "force", "on"])
         self.lightbeacon()
 
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 current_date_time=$(date +"%Y-%m-%d_%T" | tr ':' '.')
-mkdir ./recordings/"$current_date_time"
+mkdir -p ./recordings/"$current_date_time"
 cd ./recordings/"$current_date_time"
 
 gst-launch-1.0 -e rtspsrc location=rtsp://192.168.0.250:554/h264 ! rtph264depay ! h264parse ! nvv4l2decoder enable-max-performance=1 ! nvvidconv ! 'video/x-raw(memory:NVMM), format=RGBA' ! m.sink_0 \

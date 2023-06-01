@@ -50,8 +50,8 @@ class smalle():
 
     # Trigger light beacon
     def lightbeacon(self):
-        ## TODO
-        return "stub"
+        lightbeacon_proc = subprocess.Popen(["./lightbeacon.sh"])
+        lightbeacon_proc.wait()
 
     # signals the camera process to end while preserving the video footage
     def gracefulShutoff(self, channel):

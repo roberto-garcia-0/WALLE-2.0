@@ -1,0 +1,5 @@
+Go to https://www.waveshare.com/wiki/High-Precision_AD_HAT to set up your Jetson for the first time
+
+If you get an error the first time running your code about a module not found in python 
+run `python3 sudo modprobe spidev`
+details for why this work can be found here: 

@@ -25,7 +25,7 @@ class smalle():
     def __init__(self):
 
         # CONFIGURATION VARIABLES
-        self.deployment_duration = 1 # in hours
+        self.deployment_duration = 10 # in hours
         self.pump_time_cooldowns = [3,3,3] # The time in between collections ie: for [3,3,3], pump will trigger at hours 3, 6, and 9 
         self.use_pump_sys = False
         self.use_sipm_sys = False
@@ -92,10 +92,9 @@ class smalle():
         
         # Sleeps until it is time to collect DNA samples (3 in total)
         if self.use_pump_sys:
-            self.pump.collectSample(1)
-            # for i in range(3):
-            #     sleep(3600*self.pump_time_cooldowns[i])
-            #     self.pump.collectSample(i+1)
+	    for i in range(3):
+	        sleep(3600*self.pump_time_cooldowns[i])
+	        self.pump.collectSample(i+1)
         
         # Waits until recording process ends. delayed_interrupt_gstreamer will interrupt the process.
         self.recording_process.wait()

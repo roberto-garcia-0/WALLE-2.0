@@ -1,0 +1,8 @@
+for subdirectory in "/media/$USER/"*; do
+  if [[ -d "$subdirectory/WALLE-2.0" ]]; then
+    cd "$subdirectory/WALLE-2.0"
+    break
+  fi
+done
+
+python3 control_loop.py

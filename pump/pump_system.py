@@ -64,7 +64,7 @@ class pump_system:
             time.sleep(8)
             self.toggleCollection()
             total_sampled += self.water_sampled
-            print("Total Sampled: " + str(total_sampled) "mL")
+            print("Total Sampled: " + str(total_sampled) + "mL")
             duration += 1
 
     # Use to properly select filter, otherwise sets to one

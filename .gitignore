@@ -36,4 +36,6 @@
 *.mp4
 
 env/
+recordings/
+.fuse*
 

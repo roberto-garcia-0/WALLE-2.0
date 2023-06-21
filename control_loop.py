@@ -92,9 +92,9 @@ class smalle():
         
         # Sleeps until it is time to collect DNA samples (3 in total)
         if self.use_pump_sys:
-	    for i in range(3):
-	        sleep(3600*self.pump_time_cooldowns[i])
-	        self.pump.collectSample(i+1)
+                for i in range(3):
+                sleep(3600*self.pump_time_cooldowns[i])
+                self.pump.collectSample(i+1)
         
         # Waits until recording process ends. delayed_interrupt_gstreamer will interrupt the process.
         self.recording_process.wait()
